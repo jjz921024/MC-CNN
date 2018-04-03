@@ -51,7 +51,7 @@ class Alex:
         output_year = Dense(16,activation='softmax', name='output_year')(mid_year)
         
         self.model = Model(inputs=[input], outputs=[output_brand, output_class ,output_year])
-        self.model.compile(loss='categorical_crossentropy',optimizer='sgd',metrics=['acc'])
+        self.model.compile(loss='categorical_crossentropy',optimizer='sgd',metrics=['mae', 'acc'])
         return self.model
         
 #%%

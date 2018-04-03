@@ -6,7 +6,8 @@ Created on Sun Apr  1 19:48:53 2018
 @author: gdutllc
 """
 import tensorflow as tf
-from alexnet_mult import Alex
+from alexnet_single import Alex as Alex_single
+from alexnet_mult import Alex as Alex_mult
 from keras import backend as K
 from keras.objectives import categorical_crossentropy
 from keras.metrics import categorical_accuracy as accuracy
@@ -70,9 +71,11 @@ for serialized_example in tf.python_io.tf_record_iterator("train.tfrecords"):
 """
 
 #%%
-imgBatch, labelBatch = batch_input("../train_img.tfrecords", batchSize=100, num_epochs=1)
+imgBatch, labelBatch = batch_input("../train_img.tfrecords", batchSize=50, num_epochs=1)
+
 #转置 labelBatch的shape要为(3, batchSize)
 labelBatch = tf.transpose(labelBatch, perm=[1, 0])
+
 #onehot的shape要为(batchSize, 49)
 labelBrand_onehot = tf.one_hot(labelBatch[0], 49, 1, 0)
 labelClass_onehot = tf.one_hot(labelBatch[1], 22, 1, 0)
@@ -90,7 +93,7 @@ threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
 K.set_session(sess)
 #input_img = tf.placeholder(tf.float32, shape=(None, 224, 224, 3))
-model = Alex().build() #input_img
+model = Alex_single().build() #input_img
 
 #output_label = tf.placeholder(tf.float32, shape=(None, 49))
 #loss = tf.reduce_mean(categorical_crossentropy(output_label, model.output))
@@ -102,21 +105,31 @@ model = Alex().build() #input_img
 try:
     step = 0
     while not coord.should_stop():
-        #step = step + 1
+        step = step + 1
         example, label_brand, label_class, label_year = sess.run([
                 imgBatch, labelBrand_onehot, labelClass_onehot, labelYear_onehot])
     
-        loss_and_metrics = model.train_on_batch({'input_img' : example},
-                                                {'output_brand' : label_brand,
-                                                 'output_class' : label_class,
-                                                 'output_year' : label_year})
-        print("loss: ",loss_and_metrics[0], " acc: ", loss_and_metrics[1])
+        #single
+        loss_and_metrics = model.train_on_batch(example, label_brand)
         
         """
-        if step % 10 == 0:
-            loss_and_metrics = model.evaluate(example, label, batch_size=10)
-            print("loss: ",loss_and_metrics[0], " acc: ", loss_and_metrics[1])
+        #mult
+        loss_and_metrics = model.train_on_batch({'input_img' : example},
+                                                {'output_brand' : label_brand, 
+                                                 'output_class' : label_class, 
+                                                 'output_year' : label_year})
         """
+                                                 
+        print("loss: ",loss_and_metrics[0], " acc: ", loss_and_metrics[1])
+        
+
+        if step % 10 == 0:
+            loss_and_metrics = model.test_on_batch(example, label_brand)
+            print("evaluate --->  loss: ",loss_and_metrics[0], " acc: ", loss_and_metrics[1])
+      
+        
+        
+        
         
         
         
@@ -133,8 +146,8 @@ try:
                     input_img : example,
                     output_label : label}))"""
         
-        #model.fit(example, label, batch_size=10, epochs=1)
-    
+        #model.metrics_names   fit可以知道loss_and_metrice内容
+
         
 
 except tf.errors.OutOfRangeError:
