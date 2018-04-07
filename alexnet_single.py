@@ -46,11 +46,8 @@ class Alex:
 #%%
 
 from keras.callbacks import TensorBoard
-tensorboard = TensorBoard(log_dir='Graph', histogram_freq=0,  
+tensorboard = TensorBoard(log_dir='GraphSingle', histogram_freq=0,  
           write_graph=True, write_images=True)
-#tensorboard.set_model(model)
-
-
-
-
+model = Alex().build()
+tensorboard.set_model(model)
 

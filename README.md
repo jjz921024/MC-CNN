@@ -1,2 +1,2 @@
 # MC-CNN
-## MultLabel classification & Co-traing CNN 
+## MultLabel classification & Co-traning CNN 
