@@ -15,7 +15,7 @@ from data_load import batch_input
 from keras.callbacks import EarlyStopping
 
 #%%
-imgBatch, labelBatch = batch_input("train_img.tfrecords", batchSize=128, num_epochs=50)
+imgBatch, labelBatch = batch_input("train_img.tfrecords", batchSize=128, num_epochs=100)
 
 #转置 labelBatch的shape要为(3, batchSize)
 labelBatch = tf.transpose(labelBatch, perm=[1, 0])
@@ -37,19 +37,19 @@ threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
 
 K.set_session(sess)
-#input_img = tf.placeholder(tf.float32, shape=(None, 224, 224, 3))
-model = Alex_mult().build() #input_img
+K.set_learning_phase(1)
 
-#output_label = tf.placeholder(tf.float32, shape=(None, 49))
+model = Alex_mult().build() 
 #loss = tf.reduce_mean(categorical_crossentropy(output_label, model.output))
 
 
 #es = EarlyStopping(monitor='loss', patience=5, verbose=1)
 
-
+summay_writer = tf.summary.FileWriter('Graph_Mult', sess.graph)
+merged_op = tf.summary.merge_all()
 
 #%%
-try:
+try:          
     step = 0
     while not coord.should_stop():
         step = step + 1
@@ -67,9 +67,19 @@ try:
                                                  'output_year' : label_year})
                                            
                 
-        if step % 200 == 0:
+        if step % 100 == 0:
             #loss_and_metrics = model.test_on_batch(example, label_brand)
-            print("loss: ",loss_and_metrics[0], " acc: ", loss_and_metrics[1])
+            print("loss_total: ",loss_and_metrics[0], " brand_acc: ", loss_and_metrics[5], 
+                  " class_acc: ", loss_and_metrics[7], " year_acc: ", loss_and_metrics[9])
+            tf.summary.scalar('brand_loss', loss_and_metrics[1])
+            tf.summary.scalar('class_loss', loss_and_metrics[2])
+            tf.summary.scalar('year_loss', loss_and_metrics[3])
+            tf.summary.scalar('brand_acc', loss_and_metrics[5])
+            tf.summary.scalar('class_acc', loss_and_metrics[7])
+            tf.summary.scalar('year_acc', loss_and_metrics[9])
+            merged = sess.run(merged_op)
+            summay_writer.add_summary(merged, step)
+            
       
         
         """

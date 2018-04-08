@@ -53,7 +53,7 @@ def convert_to(name, isTrain):
             img = img.convert("RGB")
             
         img = img.crop(label[:4])
-        img = img.resize((224, 224))
+        img = img.resize((227, 227))
         img_raw = img.tobytes()  
         
         brand, classes, year = splite_label(label[4])
