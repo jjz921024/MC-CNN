@@ -8,7 +8,7 @@ import tensorflow as tf
 class AlexNet(object):
     """Implementation of the AlexNet."""
 
-    def __init__(self, x, num_classes, keep_prob):
+    def __init__(self, x, num_classes_brand, num_classes_classes, num_classes_year, keep_prob):
         """Create the graph of the AlexNet model.
         Args:
             x: Placeholder for the input tensor.
@@ -21,7 +21,9 @@ class AlexNet(object):
         """
         # Parse input arguments into class variables
         self.X = x
-        self.NUM_CLASSES = num_classes
+        self.NUM_CLASSES_BRAND = num_classes_brand
+        self.NUM_CLASSES_CLASSES = num_classes_classes
+        self.NUM_CLASSES_YEAR = num_classes_year
         self.KEEP_PROB = keep_prob
 
         # Call the create function to build the computational graph of AlexNet
@@ -50,16 +52,37 @@ class AlexNet(object):
         pool5 = max_pool(conv5, 3, 3, 2, 2, padding='VALID', name='pool5')
 
         # 6th Layer: Flatten -> FC (w ReLu) -> Dropout
-        flattened = tf.reshape(pool5, [-1, 5*5*256])
-        fc6 = fc(flattened, 5*5*256, 4096, name='fc6')
-        dropout6 = dropout(fc6, self.KEEP_PROB)
+        #brand
+        flattened = tf.reshape(pool5, [-1, 6*6*256]) #6*6 5*5
+        fc6_brand = fc(flattened, 6*6*256, 4096, name='fc6_brand')
+        dropout6_brand = dropout(fc6_brand, self.KEEP_PROB)
 
         # 7th Layer: FC (w ReLu) -> Dropout
-        fc7 = fc(dropout6, 4096, 4096, name='fc7')
-        dropout7 = dropout(fc7, self.KEEP_PROB)
+        fc7_brand = fc(dropout6_brand, 4096, 4096, name='fc7_brand')
+        dropout7_brand = dropout(fc7_brand, self.KEEP_PROB)
 
         # 8th Layer: FC and return unscaled activations
-        self.fc8 = fc(dropout7, 4096, self.NUM_CLASSES, relu=False, name='fc8')
+        self.fc8_brand = fc(dropout7_brand, 4096, self.NUM_CLASSES_BRAND, relu=False, name='fc8_brand')
+        
+        
+        #classes
+        fc6_classes = fc(flattened, 6*6*256, 4096, name='fc6_classes')
+        dropout6_classes = dropout(fc6_classes, self.KEEP_PROB)
+
+        fc7_classes = fc(dropout6_classes, 4096, 4096, name='fc7_classes')
+        dropout7_classes = dropout(fc7_classes, self.KEEP_PROB)
+
+        self.fc8_classes = fc(dropout7_classes, 4096, self.NUM_CLASSES_CLASSES, relu=False, name='fc8_classes')
+        
+        
+        #year
+        fc6_year = fc(flattened, 6*6*256, 4096, name='fc6_year')
+        dropout6_year = dropout(fc6_year, self.KEEP_PROB)
+
+        fc7_year = fc(dropout6_year, 4096, 4096, name='fc7_year')
+        dropout7_year = dropout(fc7_year, self.KEEP_PROB)
+
+        self.fc8_year = fc(dropout7_year, 4096, self.NUM_CLASSES_YEAR, relu=False, name='fc8_year')
         
         
         

@@ -21,8 +21,8 @@ def read_data(fileNameQue):
     #img = tf.image.decode_image(features['img'], channels=3)
     img = tf.decode_raw(features['img'], tf.uint8)
     
-    img = tf.reshape(img, [224, 224, 3])
-    img.set_shape([224, 224, 3])
+    img = tf.reshape(img, [227, 227, 3])
+    img.set_shape([227, 227, 3])
     img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
     
     label = []
